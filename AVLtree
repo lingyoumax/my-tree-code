@@ -1,0 +1,650 @@
+#include<iostream>
+#include<queue>
+#include<string>
+#include<stack>
+#include<cmath>
+using namespace std;
+template<typename T>
+struct AVLnode {
+	AVLnode<T> * left = nullptr;
+	AVLnode<T> * right = nullptr;
+	AVLnode<T> * last = nullptr;
+	T data;
+	int bf = 0;
+	~AVLnode<T>() {};
+};
+template<typename T>
+struct AVLtree {
+	AVLnode<T> * root = nullptr;
+	void AVLtree_show() {//打印树
+		queue<AVLnode<T> *> q[2];
+		int i = 0;
+		q[i].push(this->root);
+		while (!q[i].empty()) {
+			while (!q[i].empty()) {
+				AVLnode<T> *ptr = q[i].front();
+				q[i].pop();
+				if (ptr->left != nullptr) {
+					cout << ptr->left->data;
+					q[!i].push(ptr->left);
+				}
+				else {
+					cout << "*";
+				}
+				cout << "||";
+				cout << ptr->data;
+				cout << "||";
+				if (ptr->right != nullptr) {
+					cout << ptr->right->data;
+					q[!i].push(ptr->right);
+				}
+				else {
+					cout << "*";
+				}
+				cout << "   ";
+			}
+			cout << endl;
+			i = !i;
+		}
+	}
+	bool AVLtree_insert(T data) {//AVL树插入节点
+		AVLnode<T> * ptr = new AVLnode<T>;
+		ptr->data = data;
+		if (this->root == nullptr) {
+			this->root = ptr;
+			return true;
+		}
+		else {
+			AVLnode<T>* pt = this->root;
+			while (true) {
+				if (pt->data > data) {
+					if (pt->left == nullptr) {
+						pt->left = ptr;
+						ptr->last = pt;
+						break;
+					}
+					else {
+						pt = pt->left;
+					}
+				}
+				else {
+					if (pt->data == data) {
+						return false;
+					}
+					if (pt->right == nullptr) {
+						pt->right = ptr;
+						ptr->last = pt;
+						break;
+					}
+					else {
+						pt = pt->right;
+					}
+				}
+			}
+			this->AVLtree_bf(ptr->last);
+			return this->AVLtree_insert_adjust(ptr->last);
+		}
+	}
+	bool AVLtree_insert_adjust(AVLnode<T>* ptr) {//AVL树中插入某节点后开始对该结点的父节点开始作平衡化调整
+		if (ptr == nullptr) {
+			return false;
+		}
+		if (ptr->bf == 0) {
+			return true;
+		}
+		if (abs(ptr->bf) == 1) {
+			if (ptr->last == nullptr) {
+				return true;
+			}
+			else {
+				this->AVLtree_bf(ptr->last);
+				this->AVLtree_insert_adjust(ptr->last);
+			}
+		}
+		else {
+			if (ptr->bf == 2) {
+				AVLnode<T> * pt = ptr->right;
+				if (ptr->right->bf == 1) {
+					if (this->root == ptr) {
+						this->root = pt;
+					}
+					else {
+						pt->last = ptr->last;
+						if (ptr->last->left == ptr) {
+							ptr->last->left = pt;
+						}
+						else {
+							ptr->last->right = pt;
+						}
+					}
+					if (pt->left != nullptr) {
+						pt->left->last = ptr;
+					}
+					ptr->right = pt->left;
+					pt->left = ptr;
+					ptr->last = pt;
+					this->AVLtree_bf(ptr);
+				}
+				else {
+					AVLnode<T> * tp = pt->left;
+					if (this->root == ptr) {
+						this->root = tp;
+					}
+					else {
+						tp->last = ptr->last;
+						if (ptr->last->left == ptr) {
+							ptr->last->left = tp;
+						}
+						else {
+							ptr->last->right = tp;
+						}
+					}
+					if (tp->left != nullptr) {
+						tp->left->last = ptr;
+					}
+					ptr->right = tp->left;
+					if (tp->right != nullptr) {
+						tp->right->last = pt;
+					}
+					pt->left = tp->right;
+					tp->left = ptr;
+					tp->right = pt;
+					ptr->last = tp;
+					pt->last = tp;
+					this->AVLtree_bf(ptr);
+					this->AVLtree_bf(pt);
+				}
+			}
+			else {
+				AVLnode<T> * pt = ptr->left;
+				if (ptr->left->bf == -1) {
+					if (this->root == ptr) {
+						this->root = pt;
+					}
+					else {
+						pt->last = ptr->last;
+						if (ptr->last->left == ptr) {
+							ptr->last->left = pt;
+						}
+						else {
+							ptr->last->right = pt;
+						}
+					}
+					if (pt->right != nullptr) {
+						pt->right->last = ptr;
+					}
+					ptr->left = pt->right;
+					pt->right = ptr;
+					ptr->last = pt;
+					this->AVLtree_bf(ptr);
+				}
+				else {
+					AVLnode<T> * tp = pt->right;
+					if (this->root == ptr) {
+						this->root = tp;
+					}
+					else {
+						tp->last = ptr->last;
+						if (ptr->last->left == ptr) {
+							ptr->last->left = tp;
+						}
+						else {
+							ptr->last->right = tp;
+						}
+					}
+					if (tp->right != nullptr) {
+						tp->right->last = ptr;
+					}
+					ptr->left = tp->right;
+					if (tp->left != nullptr) {
+						tp->left->last = pt;
+					}
+					tp->right = ptr;
+					tp->left = pt;
+					ptr->last = tp;
+					pt->last = tp;
+					this->AVLtree_bf(ptr);
+					this->AVLtree_bf(pt);
+					
+				}
+			}
+		}
+		return true;
+	}
+	void AVLtree_preorder() {//节点的前序遍历
+		stack<AVLnode<T> *> p;
+		p.push(this->root);
+		while (!p.empty()) {
+			AVLnode<T> * ptr = p.top();
+			p.pop();
+			cout << ptr->data << " ";
+			if (ptr->right != nullptr) {
+				p.push(ptr->right);
+			}
+			if (ptr->left != nullptr) {
+				p.push(ptr->left);
+			}
+		}
+		cout << endl;
+	}
+	void AVLtree_inorder() {//节点的中序遍历
+		stack<AVLnode<T> *> p;
+		p.push(this->root);
+		AVLnode<T> * ptr = this->root->left;
+		while ((ptr != nullptr) || (!p.empty())) {
+			if (ptr != nullptr) {
+				p.push(ptr);
+				ptr = ptr->left;
+			}
+			else {
+				ptr = p.top();
+				p.pop();
+				cout << ptr->data << " ";
+				ptr = ptr->right;
+			}
+		}
+		cout << endl;
+	}
+	void AVLtree_postorder1() {//节点的后序遍历1
+		stack<AVLnode<T> *> p[2];
+		p[0].push(this->root);
+		while (!p[0].empty()) {
+			AVLnode<T> * ptr = p[0].top();
+			p[0].pop();
+			p[1].push(ptr);
+			if (ptr->left != nullptr) {
+				p[0].push(ptr->left);
+			}
+			if (ptr->right != nullptr) {
+				p[0].push(ptr->right);
+			}
+		}
+		while (!p[1].empty()) {
+			cout << (p[1].top())->data << " ";
+			p[1].pop();
+		}
+		cout << endl;
+	}
+	void AVLtree_postorder2() {//节点的后序遍历2
+		stack <AVLnode<T> *> p1;
+		stack<bool> p2;
+		AVLnode<T> * ptr = this->root;
+		p1.push(ptr);
+		p2.push(0);
+		while (!p1.empty()) {
+			if (p2.top() == 0) {
+				ptr = (p1.top())->left;
+				if (ptr == nullptr) {
+					p2.pop();
+					p2.push(1);
+				}
+				else {
+					p1.push(ptr);
+					p2.push(0);
+				}
+			}
+			else {
+				ptr = (p1.top())->right;
+				if (ptr == nullptr) {
+					while ((!p2.empty()) && (p2.top() == 1)) {
+						cout << (p1.top())->data << " ";
+						p1.pop();
+						p2.pop();
+					}
+					if (!p2.empty()) {
+						p2.pop();
+						p2.push(1);
+					}
+				}
+				else {
+					p1.push(ptr);
+					p2.push(0);
+				}
+			}
+		}
+		cout << endl;
+	}
+	void AVLtree_levelorder() {//节点的层次遍历
+		AVLnode<T> * ptr = this->root;
+		queue<AVLnode<T> *> q;
+		q.push(this->root);
+		while (!q.empty()) {
+			AVLnode<T> * ptr = q.front();
+			q.pop();
+			cout << ptr->data << " ";
+			if (ptr->left != nullptr) {
+				q.push(ptr->left);
+			}
+			if (ptr->right != nullptr) {
+				q.push(ptr->right);
+			}
+		}
+		cout << endl;
+	}
+	int AVLtree_level() {//返回树的高度
+		if (this->root == nullptr) {
+			return 0;
+		}
+		int i = 0;
+		int cs = 0;
+		queue<AVLnode<T> *> q[2];
+		q[cs].push(this->root);
+		while (!q[cs].empty()) {
+			i++;
+			while (!q[cs].empty()) {
+				if ((q[cs].front())->left != nullptr) {
+					q[!cs].push((q[cs].front())->left);
+				}
+				if ((q[cs].front())->right != nullptr) {
+					q[!cs].push((q[cs].front())->right);
+				}
+				q[cs].pop();
+			}
+			cs = !cs;
+		}
+		return i;
+	}
+	int AVLtree_level(AVLnode<T> * ptr) {//返回该节点的高度
+		if (ptr == nullptr) {
+			return 0;
+		}
+		int i = 0;
+		int cs = 0;
+		queue<AVLnode<T> *> q[2];
+		q[cs].push(ptr);
+		while (!q[cs].empty()) {
+			i++;
+			while (!q[cs].empty()) {
+				if ((q[cs].front())->left != nullptr) {
+					q[!cs].push((q[cs].front())->left);
+				}
+				if ((q[cs].front())->right != nullptr) {
+					q[!cs].push((q[cs].front())->right);
+				}
+				q[cs].pop();
+			}
+			cs = !cs;
+		}
+		return i;
+	}
+	void AVLtree_bf(AVLnode<T> *ptr) {//给AVL树中某一节点的平衡值赋值
+		ptr->bf = AVLtree_level(ptr->right) - AVLtree_level(ptr->left);
+	}
+	bool AVLtree_delete(T data) {//AVL树中删除指定值的节点
+		AVLnode<T> * ptr = this->root;
+		while (true) {
+			if (ptr == nullptr) {
+				return false;
+			}
+			if (ptr->data < data) {
+				ptr = ptr->right;
+			}
+			else {
+				if (ptr->data == data) {
+					break;
+				}
+				else {
+					ptr = ptr->left;
+				}
+			}
+		}
+		return this->AVLtree_delete(ptr);
+	}
+	bool AVLtree_delete(AVLnode<T>* ptr) {//AVL树中删除指定节点
+		if (ptr == nullptr) {
+			return false;
+		}
+		if ((ptr->left != nullptr) && (ptr->right != nullptr)) {
+			AVLnode<T>* pt = ptr->left;
+			while (pt->right != nullptr) {
+				pt = pt->right;
+			}
+			ptr->data = pt->data;
+			this->AVLtree_delete(pt);
+		}
+		else {
+			if (this->root == ptr) {
+				if (ptr->left != nullptr) {
+					this->root = ptr->left;
+					ptr->left->last = nullptr;
+				}
+				else {
+					if (ptr->right != nullptr) {
+						this->root = ptr->right;
+						ptr->right->last = nullptr;
+					}
+					else {
+						this->root = nullptr;
+					}
+				}
+				ptr->~AVLnode();
+				return true;
+			}
+			AVLnode<T>* pt = ptr->last;
+			if (ptr->left != nullptr) {
+				ptr->left->last = pt;
+				if (pt->left == ptr) {
+					pt->left = ptr->left;
+				}
+				else {
+					pt->right = ptr->left;
+				}
+			}
+			else {
+				if (ptr->right != nullptr) {
+					ptr->right->last = pt;
+					if (pt->left == ptr) {
+						pt->left = ptr->right;
+					}
+					else {
+						pt->right = ptr->right;
+					}
+				}
+				else {
+					if (pt->left == ptr) {
+						pt->left = nullptr;
+					}
+					else {
+						pt->right = nullptr;
+					}
+				}
+			}
+			ptr->~AVLnode();
+			return this->AVLtree_delete_adjust(pt);
+		}
+	}
+	bool AVLtree_delete_adjust(AVLnode<T> *ptr) {//AVL树中删除节点后对该删除节点的父节点开始作调整
+		if (ptr == nullptr) {
+			return false;
+		}
+		int before = ptr->bf;
+		this->AVLtree_bf(ptr);
+		int after = ptr->bf;
+		if ((!before) && (after)) {
+			return true;
+		}
+		if ((before) && (!after)) {
+			if (this->root == ptr) {
+				return true;
+			}
+			else {
+				return this->AVLtree_delete_adjust(ptr->last);
+			}
+		}
+		else {
+			AVLnode<T> * pt;
+			if (after == 2) {
+				pt = ptr->right;
+				switch (pt->bf) {
+				case 0:
+					if (this->root == ptr) {
+						this->root = pt;
+					}
+					if (ptr->last != nullptr) {
+						if (ptr->last->left == ptr) {
+							ptr->last->left = pt;
+						}
+						else {
+							ptr->last->right = pt;
+						}
+					}
+					pt->last = ptr->last;
+					pt->left->last = ptr;
+					ptr->right = pt->left;
+					pt->left = ptr;
+					ptr->last = pt;
+					ptr->bf = 1;
+					pt->bf = -1;
+					return true;
+				case 1:
+					if (this->root == ptr) {
+						this->root = pt;
+					}
+					else {
+						 if (ptr->last->left == ptr) {
+							 ptr->last->left = pt;
+						 }
+						 else {
+							 ptr->last->right = pt;
+						 }
+					}
+					pt->last = ptr->last;
+					if (pt->left != nullptr) {
+						pt->left->last = ptr;
+					}
+					ptr->right = pt->left;
+					pt->left = ptr;
+					ptr->last = pt;
+				    ptr->bf = 0;
+					pt->bf = 0;
+					if (this->root == pt) {
+						return true;
+					}
+					else {
+						return this->AVLtree_delete_adjust(pt->last);
+					}
+				case -1:
+					AVLnode<T>* r = pt->left;
+					if (this->root == ptr) {
+						this->root = r;
+					}
+					else {
+						if (ptr->last->left == ptr) {
+							ptr->last->left = r;
+						}
+						else {
+							ptr->last->right = r;
+						}
+					}
+					r->last = ptr->last;
+					if (r->left != nullptr) {
+						r->left->last = ptr;
+					}
+					ptr->right = r->left;
+					if (r->right != nullptr) {
+						r->right->last = pt;
+					}
+					pt->left = r->right;
+					r->left = ptr;
+					ptr->last = r;
+					r->right = pt;
+					pt->last = r;
+					this->AVLtree_bf(ptr);
+					this->AVLtree_bf(pt);
+					if (r->last == nullptr) {
+						return true;
+					}
+					else {
+						return this->AVLtree_delete_adjust(r->last);
+					}
+				}
+			}
+			else {
+				pt = ptr->left;
+				switch (pt->bf) {
+				case 0:
+					if (this->root == ptr) {
+						this->root = pt;
+					}
+					if (ptr->last != nullptr) {
+						if (ptr->last->right == ptr) {
+							ptr->last->right = pt;
+						}
+						else {
+							ptr->last->left = pt;
+						}
+					}
+					pt->last = ptr->last;
+					pt->right->last = ptr;
+					ptr->left = pt->right;
+					pt->right = ptr;
+					ptr->last = pt;
+					ptr->bf = -1;
+					pt->bf = 1;
+					return true;
+				case -1:
+					if (this->root == ptr) {
+						this->root = pt;
+					}
+					else {
+						if (ptr->last->right == ptr) {
+							ptr->last->right = pt;
+						}
+						else {
+							ptr->last->left = pt;
+						}
+					}
+					pt->last = ptr->last;
+					if (pt->right != nullptr) {
+						pt->right->last = ptr;
+					}
+					ptr->left = pt->right;
+					pt->right = ptr;
+					ptr->last = pt;
+					ptr->bf = 0;
+					pt->bf = 0;
+					if (this->root == pt) {
+						return true;
+					}
+					else {
+						return this->AVLtree_delete_adjust(pt->last);
+					}
+				case 1:
+					AVLnode<T>* r = pt->right;
+					if (this->root == ptr) {
+						this->root = r;
+					}
+					else {
+						if (ptr->last->right == ptr) {
+							ptr->last->right = r;
+						}
+						else {
+							ptr->last->left = r;
+						}
+					}
+					r->last = ptr->last;
+					if (r->right != nullptr) {
+						r->right->last = ptr;
+					}
+					ptr->left = r->right;
+					if (r->left != nullptr) {
+						r->left->last = pt;
+					}
+					pt->right = r->left;
+					r->right = ptr;
+					ptr->last = r;
+					r->left = pt;
+					pt->last = r;
+					this->AVLtree_bf(ptr);
+					this->AVLtree_bf(pt);
+					if (r->last == nullptr) {
+						return true;
+					}
+					else {
+						return this->AVLtree_delete_adjust(r->last);
+					}
+				}
+			}
+		}
+	}
+};
