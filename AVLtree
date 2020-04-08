@@ -11,11 +11,13 @@ struct AVLnode {
 	AVLnode<T> * last = nullptr;
 	T data;
 	int bf = 0;
+	AVLnode()=default;
 	~AVLnode<T>() {};
 };
 template<typename T>
 struct AVLtree {
 	AVLnode<T> * root = nullptr;
+	AVLtree()=default;
 	void AVLtree_show() {//打印树
 		queue<AVLnode<T> *> q[2];
 		int i = 0;
