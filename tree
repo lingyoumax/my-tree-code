@@ -9,11 +9,13 @@ struct node {
 	T data;//树的节点上的值
 	node<T> * left = nullptr;//左节点指针
 	node<T> * right = nullptr;//右节点指针
+	node()=default;
 	~node<T>() {}
 };
 template<typename T>
 struct tree {
 	node<T> * root = nullptr;//树的根节点指针
+	tree()=defualt;
 	void tree_show(){//打印树
 		node<T> * ptr = this->root;
 		queue<node<T> *> q[2];
