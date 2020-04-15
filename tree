@@ -174,6 +174,30 @@ struct tree {
 		}
 		cout << endl;
 	}
+	void tree_postorder3() {//节点的后序遍历3
+		stack<node<T> *> s1;
+		node<T> * ptr = this->root;
+		while (ptr != nullptr) {
+			s1.push(ptr);
+			ptr = ptr->left;
+		}
+		node<T> * pt = nullptr;
+		while (!s1.empty()) {
+			if (((s1.top())->right == pt) || (((s1.top())->left == pt) && ((s1.top())->right == nullptr))) {
+				pt = (s1.top());
+				cout << pt->data << " ";
+				s1.pop();
+			}
+			else {
+				node<T> * p = (s1.top())->right;
+				while (p != nullptr) {
+					s1.push(p);
+					p = p->left;
+				}
+				pt = nullptr;
+			}
+		}
+	}
 	void tree_levelorder(){//节点的层次遍历
 		node<T> * ptr = this->root;
 		queue<node<T> *> q;
