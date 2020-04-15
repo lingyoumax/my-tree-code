@@ -342,6 +342,30 @@ struct RBtree {
 		}
 		cout << endl;
 	}
+	void RBtree_postorder3() {//节点的后序遍历3
+		stack<RBnode<T> *> s1;
+		RBnode<T> * ptr = this->root;
+		while (ptr != nullptr) {
+			s1.push(ptr);
+			ptr = ptr->left;
+		}
+		RBnode<T> * pt = nullptr;
+		while (!s1.empty()) {
+			if (((s1.top())->right == pt) || (((s1.top())->left == pt) && ((s1.top())->right == nullptr))) {
+				pt = (s1.top());
+				cout << pt->data << " ";
+				s1.pop();
+			}
+			else {
+				RBnode<T> * p = (s1.top())->right;
+				while (p != nullptr) {
+					s1.push(p);
+					p = p->left;
+				}
+				pt = nullptr;
+			}
+		}
+	}
 	int RBtree_height() {//返回树的高度
 		if (this->root == nullptr) {
 			return 0;
