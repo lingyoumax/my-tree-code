@@ -4,7 +4,7 @@
 #include<cmath>
 struct RBnode {
 	T data;//树的节点上的值
-	RBnode<T> * last = nullptr;//上节点指针
+	RBnode<T> * last = nullptr;//父节点指针
 	RBnode<T> * left = nullptr;//左节点指针
 	RBnode<T> * right = nullptr;//右节点指针
 	bool color = 0;//节点颜色 0:黑,1:红
