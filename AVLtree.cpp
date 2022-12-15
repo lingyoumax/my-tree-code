@@ -49,7 +49,7 @@ struct AVLtree {
 			i = !i;
 		}
 	}
-	bool AVLtree_insert(T data) {//AVL树插入节点
+	bool AVLtree_insert(T data) {//AVL树中插入节点
 		AVLnode<T> * ptr = new AVLnode<T>;
 		ptr->data = data;
 		if (this->root == nullptr) {
